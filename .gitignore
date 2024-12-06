@@ -1,0 +1,43 @@
+# Python-specific ignores
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+venv/
+env/
+.idea/
+*.egg-info/
+dist/
+build/
+
+# Selenium/WebDriver ignores
+*.log
+*.xml
+*.json
+
+# Test-specific ignores
+*.db
+*.sqlite
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Operating system-specific files
+.DS_Store
+Thumbs.db
+
+# IDEs/Editors-specific
+.vscode/
+.idea/
+*.iml
+
+# Pytest, unittest or other test outputs
+*.coverage
+*.hypothesis/
+.coverage.*
+nosetests.xml
+test_*.xml
+
+# Environment files (if you are using dotenv or similar)
+.env
+.env.*
