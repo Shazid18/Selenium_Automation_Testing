@@ -39,7 +39,7 @@ def main():
         url_checker = URLChecker()
 
         # Navigate to the website
-        driver.get("https://www.alojamiento.io/property/3-springcourt-apartment/BC-2126103")
+        driver.get("https://www.alojamiento.io/property/charming-apartment-in-awesome-sevilla-with-ac-wifi/HA-61511677097")
 
         # Run SEO tests
         seo_tests = SEOTests(driver, excel_handler, url_checker)

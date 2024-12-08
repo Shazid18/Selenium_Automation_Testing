@@ -6,7 +6,7 @@ class CurrencyTests:
     def __init__(self, driver, excel_handler):
         self.driver = driver
         self.excel_handler = excel_handler
-        self.base_url = "https://www.alojamiento.io/property/3-springcourt-apartment/BC-2126103"
+        self.base_url = "https://www.alojamiento.io/property/charming-apartment-in-awesome-sevilla-with-ac-wifi/HA-61511677097"
 
     def test_currency_filter(self):
         try:
