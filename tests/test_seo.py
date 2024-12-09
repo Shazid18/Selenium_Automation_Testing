@@ -1,3 +1,4 @@
+import requests
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -7,7 +8,7 @@ class SEOTests:
         self.driver = driver
         self.excel_handler = excel_handler
         self.url_checker = url_checker
-        self.base_url = "https://www.alojamiento.io/property/charming-apartment-in-awesome-sevilla-with-ac-wifi/HA-61511677097"
+        self.base_url = "https://www.alojamiento.io/property/apartamentos-centro-col%c3%b3n/BC-189483"
 
     def test_h1_existence(self):
         h1_tags = self.driver.find_elements(By.TAG_NAME, "h1")
@@ -24,25 +25,15 @@ class SEOTests:
             tags = self.driver.find_elements(By.TAG_NAME, f"h{i}")
             heading_counts[f"h{i}"] = len(tags)
 
-        # Initialize status and error messages
+        # Initialize status
         status = "pass"
-        error_messages = []
 
-        # Check for sequence starting from h1
-        max_level_found = 0
-        for i in range(1, 7):
-            if heading_counts[f"h{i}"] > 0:
-                max_level_found = i
-
-        # Check for missing tags in sequence up to max_level_found
+        # Check for missing tags (checking all tags from h1 to h6)
         missing_tags = []
-        for i in range(1, max_level_found + 1):
+        for i in range(1, 7):  # Check all tags from h1 to h6
             if heading_counts[f"h{i}"] == 0:
                 missing_tags.append(f"h{i}")
                 status = "fail"
-
-        if missing_tags:
-            error_messages.append(f"Missing heading tags: {', '.join(missing_tags)}")
 
         # Get all headings in order of appearance
         all_headings = []
@@ -55,6 +46,7 @@ class SEOTests:
             })
 
         # Check for sequence breaks
+        sequence_breaks = []
         for i in range(len(all_headings) - 1):
             current_level = all_headings[i]['level']
             next_level = all_headings[i + 1]['level']
@@ -62,30 +54,38 @@ class SEOTests:
             # If next level jumps by more than 1, it's a sequence break
             if next_level - current_level > 1:
                 status = "fail"
-                error_messages.append(
-                    f"Sequence break: {all_headings[i]['tag']} ('{all_headings[i]['content']}') "
-                    f"followed by {all_headings[i + 1]['tag']} ('{all_headings[i + 1]['content']}')"
+                sequence_breaks.append(
+                    f"Sequence break: {all_headings[i]['tag']} to {all_headings[i + 1]['tag']}"
                 )
             # If next level goes backwards by more than the current level, it's a sequence break
-            elif next_level < current_level and next_level != 1:  # Allow h1 to appear after any level
+            elif next_level < current_level:  # Allow h1 to appear after any level
                 status = "fail"
-                error_messages.append(
-                    f"Invalid sequence: {all_headings[i]['tag']} ('{all_headings[i]['content']}') "
-                    f"followed by {all_headings[i + 1]['tag']} ('{all_headings[i + 1]['content']}')"
+                sequence_breaks.append(
+                    f"Invalid sequence: {all_headings[i]['tag']} to {all_headings[i + 1]['tag']}"
                 )
 
         # Prepare comments
-        if status == "pass":
-            comments = "All heading tags are in correct sequence"
-        else:
-            comments = " | ".join(error_messages)
+        comments = []
+        
+        # Add missing tags to comments
+        if missing_tags:
+            comments.append(f"Missing tags: {', '.join(missing_tags)}")
+        
+        # Add sequence breaks to comments
+        if sequence_breaks:
+            comments.extend(sequence_breaks)
 
-        # Add the heading counts to comments
-        comments += " | Heading counts: " + ", ".join(
+        # Add heading counts to comments
+        heading_count_str = "Heading counts: " + ", ".join(
             f"{tag}: {count}" for tag, count in heading_counts.items() if count > 0
         )
+        
+        if status == "pass":
+            final_comments = "All heading tags are present and in correct sequence | " + heading_count_str
+        else:
+            final_comments = " | ".join(comments) + " | " + heading_count_str
 
-        self.excel_handler.add_result(self.base_url, "Heading Sequence", status, comments)
+        self.excel_handler.add_result(self.base_url, "Heading Sequence", status, final_comments)    
 
     def test_image_alt_attributes(self):
         images = self.driver.find_elements(By.TAG_NAME, "img")
@@ -95,17 +95,52 @@ class SEOTests:
         comments = f"All images have alt attributes" if status == "pass" else f"{len(missing_alt)} images missing alt attributes"
         self.excel_handler.add_result(self.base_url, "Image Alt Attributes", status, comments)
 
+    #Checking the url status code
     def test_urls_status(self):
-        links = self.driver.find_elements(By.TAG_NAME, "a")
+        total_links = 0
         broken_links = []
         
+        # Find all 'a' tags
+        links = self.driver.find_elements(By.TAG_NAME, "a")
+        total_links = len(links)
+        
+        # Check each link
         for link in links:
-            url = link.get_attribute("href")
-            if url and url.startswith(("http", "https")):
-                status_code = self.url_checker.check_url_status(self.base_url, url)
-                if status_code == 404:
-                    broken_links.append(url)
-
+            try:
+                url = link.get_attribute('href')
+                # Ensure url is valid and not a javascript, mailto, or tel link
+                if url and not url.startswith(('javascript:', 'mailto:', 'tel:')):
+                    response = requests.head(url, allow_redirects=True, timeout=5)
+                    if response.status_code >= 400:
+                        broken_links.append({
+                            'url': url,
+                            'status_code': response.status_code,
+                            'text': link.text.strip() or 'No link text'
+                        })
+            except requests.RequestException as e:
+                broken_links.append({
+                    'url': url if 'url' in locals() else 'Unknown URL',
+                    'status_code': 'Error',
+                    'text': link.text.strip() or 'No link text',
+                    'error': str(e)  # Log the error details
+                })
+        
+        # Determine pass or fail status
         status = "pass" if not broken_links else "fail"
-        comments = "All URLs are valid" if status == "pass" else f"Found {len(broken_links)} broken links"
-        self.excel_handler.add_result(self.base_url, "URL Status", status, comments)
+        
+        # Prepare the comment section
+        if status == "pass":
+            comments = f"All {total_links} links are working properly"
+        else:
+            broken_links_details = []
+            for link in broken_links:
+                if link['status_code'] == 'Error':
+                    detail = f"URL: {link['url']} | Text: '{link['text']}' | Error: {link['error']}"
+                else:
+                    detail = f"URL: {link['url']} | Text: '{link['text']}' | Status Code: {link['status_code']}"
+                broken_links_details.append(detail)
+            
+            comments = f"Found {len(broken_links)} broken links out of {total_links} total links\n" + "\n".join(broken_links_details)
+
+        # Log the results to Excel
+        self.excel_handler.add_result(self.base_url, "URLs Status", status, comments)

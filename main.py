@@ -10,18 +10,17 @@ import json
 
 def extract_script_data(driver):
     try:
-        # This is a placeholder - update the script tag selector based on actual website
-        script_element = driver.find_element(By.XPATH, "//script[@type='application/ld+json']")
-        script_data = json.loads(script_element.get_attribute('innerHTML'))
+        # Extract ScriptData from JavaScript context
+        script_data = driver.execute_script("return window.ScriptData")
         
-        # Extract required data (update based on actual script structure)
+        # Extract required data
         data = {
-            'SiteURL': driver.current_url,
-            'CampaignID': script_data.get('campaignId', ''),
-            'SiteName': script_data.get('name', ''),
-            'Browser': driver.capabilities['browserName'],
-            'CountryCode': script_data.get('countryCode', ''),
-            'IP': script_data.get('ip', '')
+            'SiteURL': script_data['config']['SiteUrl'],
+            'CampaignID': script_data['pageData']['CampaignId'],
+            'SiteName': script_data['config']['SiteName'],
+            'Browser': script_data['userInfo']['Browser'],
+            'CountryCode': script_data['userInfo']['CountryCode'],
+            'IP': script_data['userInfo']['IP'],
         }
         
         # Save to Excel
@@ -39,7 +38,7 @@ def main():
         url_checker = URLChecker()
 
         # Navigate to the website
-        driver.get("https://www.alojamiento.io/property/charming-apartment-in-awesome-sevilla-with-ac-wifi/HA-61511677097")
+        driver.get("https://www.alojamiento.io/property/apartamentos-centro-col%c3%b3n/BC-189483")
 
         # Run SEO tests
         seo_tests = SEOTests(driver, excel_handler, url_checker)
@@ -49,8 +48,8 @@ def main():
         seo_tests.test_urls_status()
 
         # Run currency tests
-        currency_tests = CurrencyTests(driver, excel_handler)
-        currency_tests.test_currency_filter()
+        # currency_tests = CurrencyTests(driver, excel_handler)
+        # currency_tests.test_currency_filter()
 
         # Extract script data
         extract_script_data(driver)
