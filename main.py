@@ -48,8 +48,8 @@ def main():
         seo_tests.test_urls_status()
 
         # Run currency tests
-        # currency_tests = CurrencyTests(driver, excel_handler)
-        # currency_tests.test_currency_filter()
+        currency_tests = CurrencyTests(driver, excel_handler)
+        currency_tests.test_currency_filter()
 
         # Extract script data
         extract_script_data(driver)
