@@ -1,61 +1,56 @@
 from datetime import datetime
-import pandas as pd
-from selenium.webdriver.common.by import By
 from utils.driver_setup import DriverSetup
 from utils.excel_handler import ExcelHandler
 from utils.url_checker import URLChecker
-from tests.test_seo import SEOTests
+from tests.h1_existence import H1ExistenceTest
+from tests.heading_sequence import HeadingSequenceTest
+from tests.image_alt_attributes import ImageAltAttributesTest
+from tests.urls_status import URLsStatusTest
 from tests.test_currency import CurrencyTests
-import json
-
-def extract_script_data(driver):
-    try:
-        # Extract ScriptData from JavaScript context
-        script_data = driver.execute_script("return window.ScriptData")
-        
-        # Extract required data
-        data = {
-            'SiteURL': script_data['config']['SiteUrl'],
-            'CampaignID': script_data['pageData']['CampaignId'],
-            'SiteName': script_data['config']['SiteName'],
-            'Browser': script_data['userInfo']['Browser'],
-            'CountryCode': script_data['userInfo']['CountryCode'],
-            'IP': script_data['userInfo']['IP'],
-        }
-        
-        # Save to Excel
-        df = pd.DataFrame([data])
-        df.to_excel(f'script_data_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx', index=False)
-        
-    except Exception as e:
-        print(f"Error extracting script data: {str(e)}")
+from tests.scrape_data import adjust_column_widths, extract_script_data
+from config.config import BASE_URL  # Import BASE_URL from config
 
 def main():
     driver = None
     try:
+        # Setup the web driver, Excel handler, and URL checker
         driver = DriverSetup.get_driver()
         excel_handler = ExcelHandler()
         url_checker = URLChecker()
 
-        # Navigate to the website
-        driver.get("https://www.alojamiento.io/property/apartamentos-centro-col%c3%b3n/BC-189483")
+        # Navigate to the website using BASE_URL from config
+        print(f"Navigating to {BASE_URL}...")
+        driver.get(BASE_URL)
 
-        # Run SEO tests
-        seo_tests = SEOTests(driver, excel_handler, url_checker)
-        seo_tests.test_h1_existence()
-        seo_tests.test_heading_sequence()
-        seo_tests.test_image_alt_attributes()
-        seo_tests.test_urls_status()
+        # Run SEO Tests
+        print("Running SEO Tests...")
+        print("Running H1 Tests...")
+        h1_test = H1ExistenceTest(driver, excel_handler, url_checker, driver.current_url)
+        h1_test.run()
 
-        # Run currency tests
-        currency_tests = CurrencyTests(driver, excel_handler)
+        print("Running Sequence Tests...")
+        heading_test = HeadingSequenceTest(driver, excel_handler, url_checker, driver.current_url)
+        heading_test.run()
+
+        print("Running Image alt Tests...")
+        image_test = ImageAltAttributesTest(driver, excel_handler, url_checker, driver.current_url)
+        image_test.run()
+
+        print("Running URL Tests...")
+        url_test = URLsStatusTest(driver, excel_handler, url_checker, driver.current_url)
+        url_test.run()
+
+        # Run Currency Tests
+        print("Running Currency Tests...")
+        currency_tests = CurrencyTests(driver, excel_handler, url_checker, driver.current_url)
         currency_tests.test_currency_filter()
 
-        # Extract script data
+        # Extract Script Data
+        print("Extracting Script Data...")
         extract_script_data(driver)
 
-        # Save results
-        excel_handler.save_results()
+        excel_handler.close()
+        print("Test results saved successfully.")
 
     except Exception as e:
         print(f"Error during test execution: {str(e)}")
