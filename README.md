@@ -125,7 +125,7 @@ This project requires the following Python packages:
 ### Set up the configuration:
 - Make sure `config/config.py` contains the correct settings for your ChromeDriver and other configuration options.
 
-- To change the test webpage, simply change the BASE_URL in the `config/config.py` file. (Currently set to the vacation rental page)
+- To change the test webpage, simply change the BASE_URL in the `config/config.py` file. (Currently set to the vacation rental page [https://www.alojamiento.io/property/apartamentos-centro-col%c3%b3n/BC-189483])
 
 - By default, the project uses `webdriver-manager` to download the correct version of ChromeDriver automatically. However, if you want to manually specify the driver path, set `USE_CHROMEDRIVER_MANAGER = False` in `config/config.py`.
 
@@ -143,7 +143,7 @@ This project requires the following Python packages:
 - The results are stored in `automation_report.xlsx`. Each test writes its results to a separate sheet in the same Excel file. The file will include detailed information about each test, such as the tested page url, test case name, pass/fail status and comments.
 
 ### Scrape data from Script data: 
-- Extracts important information such as Site URL, Campaign ID, SiteName, Browser, CountryCode and IP from the page and stored in `script_data.xlsx` file.
+- Extracts important information such as Site URL, Campaign ID, SiteName, Browser, CountryCode and IP from the page and stored those information in `script_data.xlsx` file.
 
 ## Reusability of Code
 
