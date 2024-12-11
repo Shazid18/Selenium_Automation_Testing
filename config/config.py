@@ -20,3 +20,12 @@ CHROME_OPTIONS = [
     "--start-maximized",
     "--disable-notifications"
 ]
+
+# WebDriver options For headless compatibility, especially on Windows
+HEADLESS_OPTIONS = [
+    "--headless",
+    "--disable-gpu"
+]
+
+# Headless mode configuration (set to True to run headless)
+HEADLESS_MODE = False  # Set this to True for headless mode, False for normal browser

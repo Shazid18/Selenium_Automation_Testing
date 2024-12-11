@@ -8,7 +8,7 @@ from tests.image_alt_attributes import ImageAltAttributesTest
 from tests.urls_status import URLsStatusTest
 from tests.test_currency import CurrencyTests
 from tests.scrape_data import adjust_column_widths, extract_script_data
-from config.config import BASE_URL  # Import BASE_URL from config
+from config.config import BASE_URL
 
 def main():
     driver = None

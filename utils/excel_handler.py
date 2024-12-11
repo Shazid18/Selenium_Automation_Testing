@@ -2,9 +2,11 @@ import os
 from openpyxl import Workbook, load_workbook
 from datetime import datetime
 
+from config.config import EXCEL_FILE
+
 class ExcelHandler:
     def __init__(self):
-        self.filename = "automation_report.xlsx"
+        self.filename = EXCEL_FILE
         self.workbook = None
         
         try:

@@ -40,7 +40,7 @@ The results of each test are recorded in an Excel file with detailed comments on
   
   ```plaintext
 
-     Selenium/
+     Selenium_Automation_Testing/
       ├── config/
       │   └── config.py               # Configuration settings (e.g., URLs, credentials)
       ├── tests/
@@ -100,8 +100,8 @@ This project requires the following Python packages:
   
   1. Clone the repository:
      ```bash
-     git clone https://github.com/Shazid18/Selenium_V1.git
-     cd Selenium_V1
+     git clone https://github.com/Shazid18/Selenium_Automation_Testing.git
+     cd Selenium_Automation_Testing
      ```
   
   2. Set up a virtual environment:
@@ -128,6 +128,12 @@ This project requires the following Python packages:
 - To change the test webpage, simply change the BASE_URL in the `config/config.py` file. (Currently set to the vacation rental page [https://www.alojamiento.io/property/apartamentos-centro-col%c3%b3n/BC-189483])
 
 - By default, the project uses `webdriver-manager` to download the correct version of ChromeDriver automatically. However, if you want to manually specify the driver path, set `USE_CHROMEDRIVER_MANAGER = False` in `config/config.py`.
+
+- **Headless Mode:** To run the tests in headless mode (without opening a browser window), you can toggle the `HEADLESS_MODE` setting in the `config/config.py` file:
+   - Set `HEADLESS_MODE = True` for headless mode.
+   - Set `HEADLESS_MODE = False` for normal browser mode.
+
+   This allows you to run tests without launching the browser UI, which is useful for CI/CD environments or automated testing.
 
 ### Running the tests:
 - You can run the tests using the main.py script. This script will automatically:
